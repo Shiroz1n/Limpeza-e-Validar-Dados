@@ -95,3 +95,35 @@ class LimpezaDados
             self.log_mudancas.append(msg)
 
             return self
+
+    def remover_outliers(self, coluna, metodo="iqr"):
+
+        if coluna not in self.df.columns:
+            return self
+        
+
+        antes = len(self.df)
+
+        if metodo == "iqr":
+            Q1 = self.df[coluna].quantile(0.25)
+            Q3 = self.df[coluna].quantile(0.75)
+            IQR = Q3 - Q1
+
+        limite_inferior = Q1 - 1.5 * IQR
+        limite_superior = Q3 + 1.5 * IQR
+
+        self.df = self.df[
+            (self.df[coluna] >= limite_inferior) &
+            (self.df[coluna] <= limite_superior)
+        ]
+
+    depois = len(self.df)
+    removidos = antes - depois
+
+
+    msg = f"Removidos {removidos} outliers da coluna '{coluna}' "
+    print(msg)
+    self.log_mudancas.append(msg)
+
+    return self
+
