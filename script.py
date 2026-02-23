@@ -3,7 +3,7 @@ import numpy as np
 from datetime import datetime
 import re
 
-class LimpezaDados
+class LimpezaDados:
 
     def __init__(self, df):
         self.df = df.copy()
@@ -24,12 +24,12 @@ class LimpezaDados
 
         return self
 
-    def tratar_valores_nulos(self, estategia='preencher')
+    def tratar_valores_nulos(self, estrategia='preencher'):
         nulos_antes = self.df.isnull().sum().sum()
 
         if estrategia == "preencher":
             colunas_numericas = self.df.select_dtypes(include=[np.number]).columns
-            self.df[colunas_numerias] = self.df[colunas_numerias].fillna(0)
+            self.df[colunas_numericas] = self.df[colunas_numericas].fillna(0)
 
 
             colunas_texto = self.df.select_dtypes(include=["object"]).columns
@@ -96,6 +96,23 @@ class LimpezaDados
 
             return self
 
+    def converter_datas(self, colunas_data, formato='%Y-%m-%d'):
+        """
+        Converte colunas para formato de data
+        """
+        for col in colunas_data:
+            if col in self.df.columns:
+                try:
+                    self.df[col] = pd.to_datetime(self.df[col], format=formato, errors='coerce')
+                    msg = f"✅ Coluna '{col}' convertida para data"
+                    print(msg)
+                    self.log_mudancas.append(msg)
+                except:
+                    msg = f"❌ Erro ao converter '{col}' para data"
+                    print(msg)
+        
+        return self
+
     def remover_outliers(self, coluna, metodo="iqr"):
 
         if coluna not in self.df.columns:
@@ -117,15 +134,15 @@ class LimpezaDados
             (self.df[coluna] <= limite_superior)
         ]
 
-    depois = len(self.df)
-    removidos = antes - depois
+        depois = len(self.df)
+        removidos = antes - depois
 
 
-    msg = f"Removidos {removidos} outliers da coluna '{coluna}' "
-    print(msg)
-    self.log_mudancas.append(msg)
+        msg = f"Removidos {removidos} outliers da coluna '{coluna}' "
+        print(msg)
+        self.log_mudancas.append(msg)
 
-    return self
+        return self
 
     def gerar_relatorio(self):
 
@@ -134,7 +151,7 @@ class LimpezaDados
         print("="*60)
 
         print(f"\n Resumo:")
-        print(f" Linhas originais: {len(Self.df_original)}")
+        print(f" Linhas originais: {len(self.df_original)}")
         print(f" Linhas finais: {len(self.df)}")
         print(f" Colunas: {len(self.df.columns)}")
 
@@ -151,6 +168,8 @@ class LimpezaDados
 
         print("\n" + "="*60 + "\n")
 
+        return self
+
     def exportar(self, arquivo_saida):
         self.df.to_excel(arquivo_saida, index=False)
         print(f"Dados limpos salvos em: {arquivo_saida}")
@@ -160,7 +179,7 @@ class LimpezaDados
 def limpar_dados_vendas(arquivo_entrada, arquivo_saida):
 
     print("Lendo arquivo...")
-    df = pd,read_excel(arquivo_entrada)
+    df = pd.read_excel(arquivo_entrada)
 
     print(f"Arquivo original: {len(df)} linhas, {len(df.columns)} colunas \n")
 
@@ -174,9 +193,9 @@ def limpar_dados_vendas(arquivo_entrada, arquivo_saida):
                 .validar_email("email")
                 .remover_outliers("valor", metodo="iqr")
                 .gerar_relatorio()
-                .exportar(arquico_saida)
+                .exportar(arquivo_saida)
             )
-            return df_limpo
+    return df_limpo
     
 def validar_dados_financeiros(df):
     print("Validando dados financeiros...\n")
@@ -196,7 +215,7 @@ def validar_dados_financeiros(df):
     
     #Quantidades impossiveis
     if "quantidade" in df.columns:
-        impossivel = df[df["qunatidade"] <= 0]
+        impossivel = df[df["quantidade"] <= 0]
         if len(impossivel) > 0:
             problemas.append(f" ERRO {len(impossivel)} quantidades invalidas")
     
@@ -218,3 +237,49 @@ def validar_dados_financeiros(df):
         print("✅ Todos os dados financeiros estão válidos!")
     
     return problemas
+
+
+#Exemplo de uso com dados gerados
+
+def dados_sujos_exemplo():
+
+    dados_sujos = {
+        'id': [1, 2, 2, 3, 4, 5, 6, 7],  # ID 2 duplicado
+        'data_venda': ['2024-01-15', '2024-01-16', '2024-01-16', 'INVALIDA', 
+                       '2024-01-18', '2024-01-19', '2024-01-20', '2024-01-21'],
+        'cliente': ['  joão silva  ', 'MARIA SANTOS', 'Pedro oliveira', None, 
+                   'ana costa', 'João Silva', 'Carlos Souza', 'Fernanda Lima'],
+        'email': ['joao@email.com', 'maria@email', 'pedro@email.com', None,
+                 'ana@email.com', 'joao@email.com', 'carlos@email.com', 'invalido'],
+        'valor': [100.50, 200.00, 200.00, -50.00, 150.75, 1000000, 75.25, 125.00],  # Valor negativo e outlier
+        'quantidade': [2, 3, 3, 0, 1, 2, 1, 2],  # Quantidade zero
+        'status': ['aprovado', 'PENDENTE', 'aprovado', 'cancelado', None, 
+                  'aprovado', 'Pendente', 'aprovado']
+    }
+    
+    df = pd.DataFrame(dados_sujos)
+    df.to_excel('dados_sujos_exemplo.xlsx', index=False)
+    print("✅ Dados sujos de exemplo criados: dados_sujos_exemplo.xlsx")
+    return df
+
+
+if __name__ == "__main__":
+    # Criar dados de exemplo
+    df_sujo = dados_sujos_exemplo()
+    
+    print("\n" + "="*60)
+    print("ANTES DA LIMPEZA:")
+    print("="*60)
+    print(df_sujo)
+    print("\n")
+    
+    # Executar limpeza
+    df_limpo = limpar_dados_vendas(
+        'dados_sujos_exemplo.xlsx',
+        'dados_limpos.xlsx'
+    )
+    
+    print("\n" + "="*60)
+    print("DEPOIS DA LIMPEZA:")
+    print("="*60)
+    print(df_limpo)
