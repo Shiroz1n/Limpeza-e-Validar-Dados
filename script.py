@@ -230,11 +230,11 @@ def validar_dados_financeiros(df):
     
     # Mostrar resultado
     if problemas:
-        print("⚠️ Problemas encontrados:")
+        print(" Problemas encontrados:")
         for p in problemas:
             print(f"   {p}")
     else:
-        print("✅ Todos os dados financeiros estão válidos!")
+        print("Todos os dados financeiros estão válidos!")
     
     return problemas
 
@@ -259,7 +259,7 @@ def dados_sujos_exemplo():
     
     df = pd.DataFrame(dados_sujos)
     df.to_excel('dados_sujos_exemplo.xlsx', index=False)
-    print("✅ Dados sujos de exemplo criados: dados_sujos_exemplo.xlsx")
+    print(" Dados sujos de exemplo criados: dados_sujos_exemplo.xlsx")
     return df
 
 
@@ -267,9 +267,9 @@ if __name__ == "__main__":
     # Criar dados de exemplo
     df_sujo = dados_sujos_exemplo()
     
-    print("\n" + "="*60)
+    print("\n" + "="*30)
     print("ANTES DA LIMPEZA:")
-    print("="*60)
+    print("="*30)
     print(df_sujo)
     print("\n")
     
@@ -279,7 +279,7 @@ if __name__ == "__main__":
         'dados_limpos.xlsx'
     )
     
-    print("\n" + "="*60)
+    print("\n" + "="*30)
     print("DEPOIS DA LIMPEZA:")
-    print("="*60)
+    print("="*30)
     print(df_limpo)
